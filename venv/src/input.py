@@ -9,6 +9,23 @@ def main():
 
     for loop in range(0,10):
 
+        for j in range(0,4):
+
+            if (j == 0):
+                position = random.randint(0,9)
+                pos.append(position)
+            else:
+                position = choice([i for i in range(0,9) if i not in pos])
+                pos.append(position)
+
+            for k in range(0,len(pattern)):
+                if (k == position):
+                    char = random.choice(nucleoids)
+                    while pattern[position] == char:
+                        char = random.choice(nucleoids)
+                    pattern = pattern[:position]+char+pattern[position+1:]
+                    break
+        pos.clear()
         position = random.randint(0,480)
         for j in range(0,490):
             if(j == position):
