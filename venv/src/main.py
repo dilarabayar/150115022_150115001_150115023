@@ -1,8 +1,43 @@
 import random
 from random import choice
+import itertools
+import operator
 
-def randomizedmotifsearch():
-    print("randomized")
+def randomizedmotifsearch(dna,motifsize,motiflength):
+    motifs = [None] * motifsize
+    best_motifs = [None] * motifsize
+    allsubstrings = [None] * 10
+    best_score = 0
+    denominator = 0
+    count = 0
+
+    #her sıradan random 10mer seçiyor. motife atıyor.
+    for i in range(0, len(dna)):
+        rndkmer = random.choice(findsubstring(dna[i], motiflength))
+        motifs[i] = rndkmer
+
+    best_motifs = motifs.copy()
+
+    while True:
+        count, denominator = construct_count(motifs)
+        profile_array = profile(count, denominator)
+        #dnada dizin dizin en iyi sonucu veren kmer bulunuyor. motif bu kmer ile değiştiriliyor.
+        for i in range(0, len(dna)):
+            substring = findsubstring(dna[i], 10).copy()
+            element = probability_randomized(substring, profile_array)
+            del motifs[i]
+            motifs.insert(i, element)
+
+        #eğer sonuç ilkinden daha iyiyse devam
+        if (score(motifs) < score(best_motifs)):
+            best_motifs = motifs.copy()
+        #sonuç ilkinden kötüyse bitir.
+        else:
+            print("Randomized En iyi score: ", score(best_motifs))
+            for i in range(0, len(best_motifs[0])):
+                print(best_motifs[i])
+            return
+
 
 def gibbsampler(dna,motifsize,motiflength,iteration):
     motifs = [None] * motifsize
@@ -16,10 +51,15 @@ def gibbsampler(dna,motifsize,motiflength,iteration):
         rndkmer = random.choice(findsubstring(dna[i],motiflength))
         motifs[i] = rndkmer
 
+    for i in range(0, len(motifs)):
+        print(motifs[i])
+
     best_motifs = motifs.copy()
 
     for i in range(0, iteration):
         row = random.randint(0, motifsize-1)  # random bir motif seçilmesi belirleniyor.
+        #print("silinecek", row)
+        #print(i,"Silinen Motif: ", motifs[row])
         del motifs[row]   #seçilen rowu siliyorum.
         count, denominator = construct_count(motifs)
         profile_array = profile(count, denominator)
@@ -28,7 +68,7 @@ def gibbsampler(dna,motifsize,motiflength,iteration):
         if (score(motifs) < score(best_motifs)):
             best_motifs = motifs.copy()
 
-    print("En iyi scor: ", score(best_motifs))
+    print("En iyi score: ", score(best_motifs))
     for i in range(0, len(best_motifs[0])):
         print(best_motifs[i])
 
@@ -91,7 +131,7 @@ def profile(count, denominator):
     return profile
 
 def probability_gibbs(motif, profile):
-    #Randomized için farklı probability gerekli çünkü orada dnada satır satır en iyiler bulunacak. burada random alıyor.
+    select = None
     probabilities = []
     init = 1
 
@@ -107,11 +147,33 @@ def probability_gibbs(motif, profile):
                 init *= profile[3][j]
         probabilities.append(init)
 
-    selected_motif = random.choices(motif, probabilities)[0]
+    select = random.choices(motif, probabilities)[0]
 
-    #print("Bunu seçtim: ", selected_motif)
+    print("Bunu seçtim: ", select)
 
-    return selected_motif
+    return select
+
+def probability_randomized(dna, profile):
+    probabilities = []
+    init = 1
+
+    for i in range(0, len(dna)):
+        for j in range(0, len(dna[i])):
+            if (dna[i][j] == 'a'):
+                init *= profile[0][j]
+            elif (dna[i][j] == 'c'):
+                init *= profile[1][j]
+            elif (dna[i][j] == 'g'):
+                init *= profile[2][j]
+            elif (dna[i][j] == 't'):
+                init *= profile[3][j]
+        probabilities.append(init)
+
+    #maximum probability olanın indexini döndür. bana o kmerin valuesu lazım.
+    index = probabilities.index(max(probabilities))
+
+    return dna[index]
+
 
 def findsubstring(string,size):
     substring = []
@@ -133,7 +195,8 @@ def main():
     for line in f:
         dna.append(line.rstrip('\n'))
 
-    gibbsampler(dna,10,10,2000)
+    #gibbsampler(dna,10,10,2000)
+    randomizedmotifsearch(dna,10,10)
 
 
 
