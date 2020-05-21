@@ -1,12 +1,12 @@
+#Dilara Bayar 150115022 Sahra Bekli 150115023 İncilay Dikbıyık 150115001
 import random
 from random import choice
-import itertools
-import operator
 
 def randomizedmotifsearch(dna,motifsize,motiflength):
+    counter = 0
     motifs = [None] * motifsize
     best_motifs = [None] * motifsize
-    allsubstrings = [None] * 10
+    allsubstrings = [None] * motifsize
     best_score = 0
     denominator = 0
     count = 0
@@ -31,10 +31,11 @@ def randomizedmotifsearch(dna,motifsize,motiflength):
         #eğer sonuç ilkinden daha iyiyse devam
         if (score(motifs) < score(best_motifs)):
             best_motifs = motifs.copy()
+            counter = counter + 1
         #sonuç ilkinden kötüyse bitir.
         else:
-            print("Randomized En iyi score: ", score(best_motifs))
-            for i in range(0, len(best_motifs[0])):
+            print("Best score found in ", counter, ". iteration and score is ", score(best_motifs))
+            for i in range(0, len(best_motifs)):
                 print(best_motifs[i])
             return
 
@@ -51,15 +52,10 @@ def gibbsampler(dna,motifsize,motiflength,iteration):
         rndkmer = random.choice(findsubstring(dna[i],motiflength))
         motifs[i] = rndkmer
 
-    for i in range(0, len(motifs)):
-        print(motifs[i])
-
     best_motifs = motifs.copy()
 
     for i in range(0, iteration):
         row = random.randint(0, motifsize-1)  # random bir motif seçilmesi belirleniyor.
-        #print("silinecek", row)
-        #print(i,"Silinen Motif: ", motifs[row])
         del motifs[row]   #seçilen rowu siliyorum.
         count, denominator = construct_count(motifs)
         profile_array = profile(count, denominator)
@@ -68,7 +64,7 @@ def gibbsampler(dna,motifsize,motiflength,iteration):
         if (score(motifs) < score(best_motifs)):
             best_motifs = motifs.copy()
 
-    print("En iyi score: ", score(best_motifs))
+    print("Motifs that has best score is: ", score(best_motifs))
     for i in range(0, len(best_motifs[0])):
         print(best_motifs[i])
 
@@ -119,7 +115,6 @@ def construct_count(motifs):
         for i in range(0,len(count)):
             count[i] = [x + 1 for x in count[i]]
         denominator = denominator + 4 #her değere 1 ekleyince payda da acgt boyutundan dolayı 4 artmış oluyor.
-
     return count, denominator
 
 def profile(count, denominator):
@@ -127,13 +122,11 @@ def profile(count, denominator):
 
     for i in range(0, len(count)):
         profile[i] = [x/denominator for x in count[i]]
-
     return profile
 
 def probability_gibbs(motif, profile):
-    select = None
     probabilities = []
-    init = 1
+    init = 1.0
 
     for i in range(0, len(motif)):
         for j in range(0, len(motif[i])):
@@ -146,16 +139,14 @@ def probability_gibbs(motif, profile):
             elif (motif[i][j] == 't'):
                 init *= profile[3][j]
         probabilities.append(init)
+        init = 1.0
 
     select = random.choices(motif, probabilities)[0]
-
-    print("Bunu seçtim: ", select)
-
     return select
 
 def probability_randomized(dna, profile):
     probabilities = []
-    init = 1
+    init = 1.0
 
     for i in range(0, len(dna)):
         for j in range(0, len(dna[i])):
@@ -168,10 +159,9 @@ def probability_randomized(dna, profile):
             elif (dna[i][j] == 't'):
                 init *= profile[3][j]
         probabilities.append(init)
-
+        init = 1.0
     #maximum probability olanın indexini döndür. bana o kmerin valuesu lazım.
     index = probabilities.index(max(probabilities))
-
     return dna[index]
 
 
@@ -186,19 +176,18 @@ def findsubstring(string,size):
 
     return substring
 
-
 def main():
     dna = []
 
-    #dna = ['ttaccttaac', 'gatgtctgtc', 'ccggcgttag', 'ccggcgttag', 'cactaacgag', 'cgtcagaggt']
     f = open("input.txt", "r")
     for line in f:
         dna.append(line.rstrip('\n'))
 
-    #gibbsampler(dna,10,10,2000)
+    print("Gibbs Algorithm results: ")
+    gibbsampler(dna,10,10,1000)
+    print("\n")
+    print("Randomized Motif Search Algorithm  results: ")
     randomizedmotifsearch(dna,10,10)
-
-
 
 if __name__ == "__main__":
     main()

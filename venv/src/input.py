@@ -25,6 +25,7 @@ def main():
                         char = random.choice(nucleoids)
                     pattern = pattern[:position]+char+pattern[position+1:]
                     break
+        print("yeni pattern: ", pattern)
         pos.clear()
         position = random.randint(0,480)
         for j in range(0,490):
@@ -38,6 +39,7 @@ def main():
             file.write(string + '\n')
 
         string = ""
+        pattern = "aaaaaggggg"
 
 
 if __name__ == "__main__":
