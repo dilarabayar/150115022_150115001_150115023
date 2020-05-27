@@ -24,7 +24,7 @@ def randomizedmotifsearch(dna,motifsize,motiflength):
         profile_array = profile(count, denominator) #profile oluştur
         #dnada dizin dizin en iyi sonucu veren kmer bulunuyor. motif bu kmer ile değiştiriliyor.
         for i in range(0, len(dna)): #row boyunca ilerler.
-            substring = findsubstring(dna[i], motifsize).copy() #dna rowundaki tüm kmerlerin probilitisi hesaplanır.
+            substring = findsubstring(dna[i], motiflength).copy() #dna rowundaki tüm kmerlerin probilitisi hesaplanır.
             element = probability_randomized(substring, profile_array) #
             del motifs[i]  #o sıradaki motif silinir, ve yeni en iyi motif konur.
             motifs.insert(i, element)
@@ -124,6 +124,7 @@ def profile(count, denominator):
 
     for i in range(0, len(count)): #tüm arrayi paydaya böl.
         profile[i] = [x/denominator for x in count[i]]
+
     return profile
 
 def probability_gibbs(motif, profile):
@@ -191,11 +192,12 @@ def main():
     for line in f:
         dna.append(line.rstrip('\n'))
 
+
     print("Gibbs Algorithm results: ")
-    gibbsampler(dna,10,10,1000)
+    gibbsampler(dna,10,8,1000)
     print("\n")
     print("Randomized Motif Search Algorithm  results: ")
-    randomizedmotifsearch(dna,10,10)
+    randomizedmotifsearch(dna,10,8)
 
 if __name__ == "__main__":
     main()
